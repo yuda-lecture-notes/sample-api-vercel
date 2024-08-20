@@ -1,50 +1,93 @@
 # import package
-from fastapi import FastAPI, Request, Header, HTTPException
-import pandas as pd
+import psycopg2
+from fastapi import FastAPI, Form, Request
+from psycopg2.extras import RealDictCursor
+import pan`das as pd
 
-# buat dataframe baru
-df = pd.DataFrame()
+conn = psycopg2.connect(
+    "dbname=db_api user=postgres.lewqnljcudghydncbnkb password=DswNVYj8MxEddPrV port=5432 host=aws-0-ap-southeast-1.pooler.supabase.com"
+)
 
-# mengisi dataframe
-df['UserName'] = ['Undertaker', 'Rey Mysterio', 'Edge']
-df['Location'] = ['Texas', 'Mexico', 'Colorado']
-
-# password api_key
-API_KEY = "testingapitokenkey1234"
-
-# buat object 
+# create FastAPI instance/objecta
 app = FastAPI()
 
-# membuat function + url (endpoint)
-# endpoint untuk retrieve all data
-# http://www.domain.com
+# endpoint - main
 @app.get("/")
-def handlerData(request: Request):
-    # get request headers
-    headers = request.headers
-
+def getMain(req: Request):
     return {
-        "message": "this is fastapi data",
-        "headers": headers
+        "message": "welcome to sample-api-vercel",
+        "docs": f"{req.headers['host']}/docs",
+        "data from remote db": f"{req.headers['host']}/data",
+        "data from csv": f"{req.headers['host']}/csv",
     }
 
-# endpoint get all data from dataframe
-# domain.com/data/texas -> return data yang location == texas
-# domain.com/data/jakarta -> return data yang location == jakarta
-@app.get("/data/{loc}")
-def handlerDf(loc):
-    # filter dataframe
-    result = df.query(f"Location == '{loc}'")
+# endpoint - get all data from db
+@app.get("/data")
+def getDataDB():
+    # fetch data from db
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute("select * from mock_users;")
 
-    return result.to_dict(orient="records")
+    return cur.fetchall()
+    
+# endpoint - get data by id from db
+@app.get("/data/{id}")
+def getDataDBById(id: int):
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(f"select * from mock_users where id = {id};")
 
-# endpoint secret
-@app.get("/secret")
-def handlerSecret(password: str = Header(None)):
-    # cek api_key
-    if password != API_KEY or password == None:
-        raise HTTPException(detail="password salah!", status_code=401)
+    return cur.fetchone()
 
+# endpoint - create new data in db
+@app.post("/data/create")
+def createDataDB(payload: dict):
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(f"""
+        insert into mock_users (first_name, last_name, email, gender)
+        values ('{payload['first_name']}', '{payload['last_name']}', '{payload['email']}', '{payload['gender']}');
+    """)
+    # commit the changes to the database
+    conn.commit()
     return {
-        "secret": "hanya saya dan tuhan yang tahu"
+        "data": payload,
+        "status": "success"
     }
+
+# endpoint - update data by id in db
+@app.put("/data/update/{id}")
+def updateDataEmailDB(id: int, email: str = Form(...)):
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(f"""
+        update mock_users 
+        set email = '{email}'
+        where id = {id};
+    """)
+    # commit the changes to the database
+    conn.commit()
+    return f"data with id {id} has been updated"
+
+
+# endpoint - delete data by id in db
+@app.delete("/data/delete/{id}")
+def deleteDataDB(id: int):
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(f"delete from mock_users where id = {id}")
+
+    # commit the changes to the database
+    conn.commit()
+    return f"data with id {id} has been deleted"
+
+# endpoint - get all data from csv
+@app.get("/csv")
+def getDataCSV():
+    df = pd.read_csv('mock_users.csv')
+    return df.to_dict(orient='records')
+
+# endpoint - get data by id from csv
+@app.get("/csv/{id}")
+def getDataCSVById():
+    df = pd.read_csv('mock_users.csv')
+
+    # filter df
+    filter_df = df[df['id'] == id]
+    return filter_df.to_dict(orient='records')
