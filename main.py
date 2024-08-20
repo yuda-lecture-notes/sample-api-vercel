@@ -2,7 +2,7 @@
 import psycopg2
 from fastapi import FastAPI, Form, Request
 from psycopg2.extras import RealDictCursor
-import pan`das as pd
+import pandas as pd
 
 conn = psycopg2.connect(
     "dbname=db_api user=postgres.lewqnljcudghydncbnkb password=DswNVYj8MxEddPrV port=5432 host=aws-0-ap-southeast-1.pooler.supabase.com"
