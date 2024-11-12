@@ -4,11 +4,12 @@ from fastapi import FastAPI, Form, Request
 from psycopg2.extras import RealDictCursor
 import pandas as pd
 
+# connection to database
 conn = psycopg2.connect(
     "dbname=db_api user=postgres.lewqnljcudghydncbnkb password=DswNVYj8MxEddPrV port=5432 host=aws-0-ap-southeast-1.pooler.supabase.com"
 )
 
-# create FastAPI instance/objecta
+# create FastAPI instance/object
 app = FastAPI()
 
 # endpoint - main
@@ -16,9 +17,9 @@ app = FastAPI()
 def getMain(req: Request):
     return {
         "message": "welcome to sample-api-vercel",
-        "docs": f"{req.headers['host']}/docs",
-        "data from remote db": f"{req.headers['host']}/data",
-        "data from csv": f"{req.headers['host']}/csv",
+        "url docs": "/docs",
+        "url get data from db": "/data",
+        "url get data from csv": "/csv",
     }
 
 # endpoint - get all data from db
