@@ -4,10 +4,13 @@ from fastapi import FastAPI, Form, Request
 from psycopg2.extras import RealDictCursor
 import pandas as pd
 
-# connection to database
-conn = psycopg2.connect(
-    "dbname=db_api user=postgres.lewqnljcudghydncbnkb password=DswNVYj8MxEddPrV port=5432 host=aws-0-ap-southeast-1.pooler.supabase.com"
-)
+try:
+    # connection to database
+    conn = psycopg2.connect(
+        "dbname=db_api user=postgres.lewqnljcudghydncbnkb password=DswNVYj8MxEddPrV port=5432 host=aws-0-ap-southeast-1.pooler.supabase.com"
+    )
+except:
+    print("error connected to db")
 
 # create FastAPI instance/object
 app = FastAPI()
