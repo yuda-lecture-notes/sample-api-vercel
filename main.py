@@ -25,6 +25,10 @@ def getMain(req: Request):
         "url get data from csv": "/csv",
     }
 
+@app.get("/test/{text}")
+def getTest(text: str):
+    return {"text": text}
+
 # endpoint - get all data from db
 @app.get("/data")
 def getDataDB():
