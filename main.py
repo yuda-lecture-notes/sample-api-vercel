@@ -37,6 +37,8 @@ def getMain(req: Request):
 @app.get("/test/{text}")
 def getTest(text: str):
     for t in data:
+        print(t['Location'].lower())
+        print(text.lower())
         if t['Location'].lower() == text.lower():
             return {"text": text}
     
