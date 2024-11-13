@@ -1,8 +1,17 @@
 # import package
 import psycopg2
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, HTTPException
 from psycopg2.extras import RealDictCursor
 import pandas as pd
+
+data = [
+    {
+        "Location": "New York"
+    },
+    {
+        "Location": "Los Angeles"
+    }
+]
 
 try:
     # connection to database
@@ -27,7 +36,12 @@ def getMain(req: Request):
 
 @app.get("/test/{text}")
 def getTest(text: str):
-    return {"text": text}
+    for t in data:
+        if t['Location'].lower() == text.lower():
+            return {"text": text}
+    
+    raise HTTPException(status_code=404, detail="Not Found")
+    
 
 # endpoint - get all data from db
 @app.get("/data")
